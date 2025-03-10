@@ -29,11 +29,13 @@ import androidx.navigation.NavHostController
 import com.jop.ngaji.R
 import com.jop.ngaji.ui.component.CustomToolbar
 import com.jop.ngaji.ui.route.Route
+import com.jop.ngaji.util.shimmerBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SurahScreen(navHostController: NavHostController, state: SurahScreenState) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
             CustomToolbar(
                 title = "Quran"
@@ -45,25 +47,36 @@ fun SurahScreen(navHostController: NavHostController, state: SurahScreenState) {
                 .padding(top = padding.calculateTopPadding())
                 .fillMaxSize(),
         ) {
-            items(
-                items = state.data,
-                key = { surah -> surah.id }
-            ) { surah ->
-                ItemSurah(
-                    surahNumber = surah.id.toString(),
-                    surahName = surah.namaLatin,
-                    surahNameArabic = surah.nama,
-                    surahInfo = surah.arti,
-                    totalAyah = surah.jumlahAyat,
-                    onAction = {
-                        navHostController.navigate(Route.SURAH.plus("?number=${surah.id}"))
-                    }
-                )
+            if(state.isLoading){
+                items(count = 20) {
+                    ItemSurah(isLoading = true)
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                }
+            } else {
+                items(
+                    items = state.data,
+                    key = { surah -> surah.id }
+                ) { surah ->
+                    ItemSurah(
+                        surahNumber = surah.id.toString(),
+                        surahName = surah.namaLatin,
+                        surahNameArabic = surah.nama,
+                        surahInfo = surah.arti,
+                        totalAyah = surah.jumlahAyat,
+                        onAction = {
+                            navHostController.navigate(Route.SURAH.plus("?number=${surah.id}&ayah=1"))
+                        }
+                    )
+
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                }
             }
         }
     }
@@ -73,18 +86,20 @@ fun SurahScreen(navHostController: NavHostController, state: SurahScreenState) {
 
 @Composable
 fun ItemSurah(
-    surahNumber: String,
-    surahName: String,
-    surahNameArabic: String,
-    totalAyah: Int,
-    surahInfo: String,
+    surahNumber: String = "1",
+    surahName: String = "Al-Fatihah",
+    surahNameArabic: String = "الفاتحة",
+    totalAyah: Int = 1,
+    surahInfo: String = "Pembuka",
+    isLoading: Boolean = false,
     onAction: () -> Unit = {}
 ){
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onAction() }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .shimmerBackground(isLoading),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
