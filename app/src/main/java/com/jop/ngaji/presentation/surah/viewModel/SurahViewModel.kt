@@ -22,18 +22,18 @@ class SurahViewModel(private val repository: SurahRepository): ViewModel() {
             repository.allSurah().collect {
                 when(it){
                     is Resource.Loading -> {
-                        _state.value = SurahScreenState(isLoading = true)
+                        _state.value = _state.value.copy(isLoading = true)
                     }
                     is Resource.Success -> {
-                        _state.value = SurahScreenState(data = it.data ?: mutableListOf())
+                        _state.value = _state.value.copy(data = it.data ?: mutableListOf(), isLoading = false)
                     }
                     is Resource.Error -> {
-                        _state.value = _state.value.copy(errorMessage = "Terjadi Kesalahan")
+                        _state.value = _state.value.copy(errorMessage = "Terjadi Kesalahan", isLoading = false)
                     }
                 }
             }
         } catch (e: Exception){
-            _state.value = _state.value.copy(errorMessage = "Terjadi Kesalahan")
+            _state.value = _state.value.copy(errorMessage = "Terjadi Kesalahan", isLoading = false)
             println("Error: ${e.message}")
         }
     }
