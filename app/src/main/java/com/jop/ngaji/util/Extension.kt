@@ -1,5 +1,10 @@
 package com.jop.ngaji.util
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -15,6 +20,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import java.util.Locale
 
 fun Modifier.shimmerBackground(isLoading: Boolean = true): Modifier = composed {
     var shimmer: Brush? = null
@@ -55,3 +64,23 @@ fun Modifier.shimmerBackground(isLoading: Boolean = true): Modifier = composed {
         }
     }
 }
+
+fun Activity.goToAppSetting() {
+    val i = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", packageName, null)
+    )
+    startActivity(i)
+}
+
+fun String.getCountryCodeFromCountryName(): String {
+    val locales = Locale.getAvailableLocales()
+    for (locale in locales) {
+        if (this.equals(locale.displayCountry, ignoreCase = true)) {
+            return locale.country
+        }
+    }
+    return "ID"
+}
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settingPrefs")

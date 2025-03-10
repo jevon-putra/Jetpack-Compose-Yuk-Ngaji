@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Yuk Ngaji</string>
+    <string name="media_notification_channel">Audi Murrotal</string>
+    <string name="media_notification_channel_description">Yuk Ngaji Audio Murrotal</string>
 </resources>

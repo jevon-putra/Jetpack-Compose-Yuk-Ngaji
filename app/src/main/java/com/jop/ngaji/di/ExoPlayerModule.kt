@@ -1,8 +1,8 @@
 package com.jop.ngaji.di
 
-import androidx.media3.exoplayer.ExoPlayer
+import com.jop.ngaji.util.ExoPlayerHelper
 import org.koin.dsl.module
 
 val exoPlayerModule = module {
-    single<ExoPlayer> { ExoPlayer.Builder(get()).build() }
+    single<ExoPlayerHelper> { ExoPlayerHelper(get()) }
 }
