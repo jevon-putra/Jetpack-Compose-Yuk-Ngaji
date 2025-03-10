@@ -35,6 +35,13 @@ class ExoPlayerHelper(private var application: Application) {
         })
     }
 
+    fun playStartFrom(index: Int){
+        exoPlayer.prepare()
+        exoPlayer.seekTo(index, 0)
+        exoPlayer.play()
+        _stateIsPlay.value = true
+    }
+
     fun play(){
         exoPlayer.prepare()
         exoPlayer.play()

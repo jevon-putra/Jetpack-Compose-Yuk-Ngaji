@@ -29,8 +29,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -38,15 +41,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.jop.ngaji.R
+import com.jop.ngaji.data.model.LastReadSurah
 import com.jop.ngaji.data.model.Surah
 import com.jop.ngaji.ui.component.CustomToolbar
+import com.jop.ngaji.ui.component.DetailAyahBottomSheet
 import com.jop.ngaji.util.shimmerBackground
 import kotlinx.coroutines.launch
 
@@ -55,8 +59,9 @@ import kotlinx.coroutines.launch
 fun DetailSurahScreen(
     navHostController: NavHostController,
     surahNumber: Int,
+    ayahNumber: Int?,
     state: DetailSurahScreenState,
-    event: (DetailSurahScreenEvent) -> Unit
+    onEvent: (DetailSurahScreenEvent) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val rowListState = rememberLazyListState()
@@ -64,14 +69,14 @@ fun DetailSurahScreen(
 
     LaunchedEffect(state.allSurah.isNotEmpty()){
         if(surahNumber > 1) {
-            scope.launch { pagerState.animateScrollToPage(surahNumber - 1) }
+            scope.launch { pagerState.scrollToPage(surahNumber - 1) }
         }
     }
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
-            rowListState.animateScrollToItem(page)
-            event(DetailSurahScreenEvent.GetDetailSurah(page + 1))
+            rowListState.scrollToItem(page)
+            onEvent(DetailSurahScreenEvent.GetDetailSurah(page + 1))
         }
     }
 
@@ -94,8 +99,8 @@ fun DetailSurahScreen(
                                 modifier = Modifier.alpha(if(state.selectedSurah == null) 0f else 1f),
                                 onClick = {
                                     if(state.selectedSurah != null){
-                                        event(
-                                            DetailSurahScreenEvent.OnFavoriteSurah(
+                                        onEvent(
+                                            DetailSurahScreenEvent.SetFavoriteSurah(
                                                 surahNumber = state.selectedSurah.id,
                                                 isFavorite = !state.selectedSurah.favorite
                                             )
@@ -164,7 +169,7 @@ fun DetailSurahScreen(
                 .fillMaxSize(),
         ) {
             if(state.isAllSurahLoading){
-                LoadingStateSurahOfAyah(modifier = Modifier.weight(1f))
+                LoadingStateDetailSurah(modifier = Modifier.weight(1f))
             } else {
                 HorizontalPager(
                     modifier = Modifier.fillMaxWidth().weight(1f),
@@ -173,11 +178,14 @@ fun DetailSurahScreen(
                     reverseLayout = true,
                 ) {
                     if(state.isDetailSurahLoading){
-                        LoadingStateSurahOfAyah(modifier = Modifier.weight(1f))
+                        LoadingStateDetailSurah(modifier = Modifier.weight(1f))
                     } else {
                         AyahOfSurah(
                             modifier = Modifier.fillMaxSize(),
+                            lastReadAyah = ayahNumber,
+                            surahNumber = surahNumber,
                             state = state,
+                            event = onEvent,
                         )
                     }
                 }
@@ -213,9 +221,9 @@ fun DetailSurahScreen(
                                 .size(24.dp)
                                 .clickable {
                                     if(state.isAudioPlaying){
-                                        event(DetailSurahScreenEvent.OnPauseAudio)
+                                        onEvent(DetailSurahScreenEvent.OnPauseAudio)
                                     } else {
-                                        event(DetailSurahScreenEvent.OnPlayAudio)
+                                        onEvent(DetailSurahScreenEvent.OnPlayAudio)
                                     }
                                 },
                             painter = painterResource(if(state.isAudioPlaying) R.drawable.ic_pause else R.drawable.ic_play),
@@ -229,10 +237,19 @@ fun DetailSurahScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AyahOfSurah(modifier: Modifier, state: DetailSurahScreenState){
+fun AyahOfSurah(
+    modifier: Modifier,
+    surahNumber: Int,
+    lastReadAyah: Int?,
+    state: DetailSurahScreenState,
+    event: (DetailSurahScreenEvent) -> Unit
+){
     val scope = rememberCoroutineScope()
     val columnListState = rememberLazyListState()
+    val stateBottomSheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val showBottomSheet = remember { mutableStateOf(false) }
 
     LaunchedEffect(state.audioIndex) {
         if(state.isAudioPlaying && state.audioIndex > 0){
@@ -242,9 +259,26 @@ fun AyahOfSurah(modifier: Modifier, state: DetailSurahScreenState){
         }
     }
 
+    LaunchedEffect(state.selectedSurah!!.id) {
+        if (lastReadAyah != null && surahNumber == state.selectedSurah.id) {
+            scope.launch {
+                columnListState.animateScrollToItem(lastReadAyah)
+            }
+        }
+    }
+
+    if(showBottomSheet.value){
+        DetailAyahBottomSheet(
+            state = stateBottomSheet,
+            showBottomSheet = showBottomSheet,
+            selectedAyah = state.selectedAyah!!,
+            event = event
+        )
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
         SurahInfo(
-            name = state.selectedSurah!!.namaLatin,
+            name = state.selectedSurah.namaLatin,
             meaning = state.selectedSurah.arti,
             location = state.selectedSurah.tempatTurun,
             totalAyah = state.selectedSurah.jumlahAyat,
@@ -261,7 +295,7 @@ fun AyahOfSurah(modifier: Modifier, state: DetailSurahScreenState){
                         modifier = Modifier
                             .fillMaxWidth()
                             .shimmerBackground(state.isDetailSurahLoading)
-                            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
                             .padding(vertical = 12.dp),
                         text = "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ",
                         style = MaterialTheme.typography.headlineMedium.copy(
@@ -278,10 +312,23 @@ fun AyahOfSurah(modifier: Modifier, state: DetailSurahScreenState){
             ){ index, it ->
                 ItemOfAyah(
                     ayah = it,
+                    lastReadAyah = state.lastReadSurah.ayahNumber == it.nomorAyat && state.lastReadSurah.surahNumber == state.selectedSurah.id,
                     showSoundIcon = index == state.audioIndex && state.isAudioPlaying,
                     color = if(index % 2 == 1) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
                     isLoading = state.isDetailSurahLoading
-                )
+                ){
+                    showBottomSheet.value = true
+                    event(
+                        DetailSurahScreenEvent.ShowDetailAyahBottomSheet(
+                            LastReadSurah(
+                                surahNumber = state.selectedSurah.id,
+                                surahNameLatin = state.selectedSurah.namaLatin,
+                                surahName = state.selectedSurah.nama,
+                                ayahNumber = it.nomorAyat
+                            )
+                        )
+                    )
+                }
             }
         }
     }
@@ -290,14 +337,17 @@ fun AyahOfSurah(modifier: Modifier, state: DetailSurahScreenState){
 @Composable
 fun ItemOfAyah(
     ayah: Surah.Ayah,
+    lastReadAyah: Boolean,
     color: Color,
     isLoading: Boolean,
-    showSoundIcon: Boolean
+    showSoundIcon: Boolean,
+    action: () -> Unit = {}
 ){
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(color)
+            .clickable { action() }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -311,7 +361,7 @@ fun ItemOfAyah(
             ){
                 Image(
                     modifier = Modifier.fillMaxSize(),
-                    painter = painterResource(id = R.drawable.ic_number),
+                    painter = painterResource(id = if(lastReadAyah) R.drawable.ic_number_fill else R.drawable.ic_number_outline),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryContainer),
                     contentDescription = "Number",
                 )
@@ -322,7 +372,7 @@ fun ItemOfAyah(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color =  if(lastReadAyah) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primaryContainer
                     ),
                 )
             }
@@ -393,7 +443,7 @@ fun SurahInfo(name: String, meaning: String, location: String, totalAyah: Int, i
 }
 
 @Composable
-fun LoadingStateSurahOfAyah(modifier: Modifier){
+fun LoadingStateDetailSurah(modifier: Modifier){
     LazyColumn(
         modifier = modifier
     ) {
@@ -415,9 +465,10 @@ fun LoadingStateSurahOfAyah(modifier: Modifier){
                     teksLatin = "Bismillaahir Rahmaanir Raheem",
                     teksIndonesia = "Allah"
                 ),
-                showSoundIcon = false,
+                lastReadAyah = false,
                 color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                isLoading = true
+                isLoading = true,
+                showSoundIcon = false
             )
         }
     }
