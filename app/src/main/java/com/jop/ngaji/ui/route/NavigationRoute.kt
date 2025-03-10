@@ -32,29 +32,39 @@ fun NavigationRoute(
             val viewModel: HomeViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
             showBottomBar(true)
-            HomeScreen(navHostController = navController, state, viewModel::onEvent)
+            HomeScreen(navHostController = navController, state = state, onEvent = viewModel::onEvent)
         }
 
         composable(route = Route.SURAH){
             val viewModel: SurahViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
             showBottomBar(true)
-            SurahScreen(navHostController = navController, state)
+            SurahScreen(navHostController = navController, state = state)
         }
 
         composable(
             route = Route.SURAH.plus("?number={surahNumber}&ayah={ayah}"),
             arguments = listOf(
                 navArgument("surahNumber"){ type = NavType.IntType },
-                navArgument("ayah"){ type = NavType.IntType }
+                navArgument("ayah"){
+                    nullable = true
+                    defaultValue = null
+                    type = NavType.StringType
+                }
             )
         ){ navBackStackEntry ->
             val surahNumber = navBackStackEntry.arguments?.getInt("surahNumber")
-            val ayah = navBackStackEntry.arguments?.getInt("ayah")
+            val ayah = navBackStackEntry.arguments?.getString("ayah")?.toInt()
             val viewModel: DetailSurahViewModel = koinViewModel()
             val state by viewModel.state.collectAsState()
             showBottomBar(false)
-            DetailSurahScreen(navHostController = navController, surahNumber ?: 0, state, viewModel::onEvent)
+            DetailSurahScreen(
+                navHostController = navController,
+                surahNumber = surahNumber ?: 0,
+                ayahNumber = ayah,
+                state = state,
+                onEvent = viewModel::onEvent
+            )
         }
     }
 }

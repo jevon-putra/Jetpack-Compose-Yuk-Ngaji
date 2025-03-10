@@ -68,7 +68,7 @@ fun SurahScreen(navHostController: NavHostController, state: SurahScreenState) {
                         surahInfo = surah.arti,
                         totalAyah = surah.jumlahAyat,
                         onAction = {
-                            navHostController.navigate(Route.SURAH.plus("?number=${surah.id}&ayah=1"))
+                            navHostController.navigate(Route.SURAH.plus("?number=${surah.id}"))
                         }
                     )
 
@@ -108,7 +108,7 @@ fun ItemSurah(
         ){
             Image(
                 modifier = Modifier.fillMaxSize(),
-                painter = painterResource(id = R.drawable.ic_number),
+                painter = painterResource(id = R.drawable.ic_number_outline),
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primaryContainer),
                 contentDescription = "Number",
             )

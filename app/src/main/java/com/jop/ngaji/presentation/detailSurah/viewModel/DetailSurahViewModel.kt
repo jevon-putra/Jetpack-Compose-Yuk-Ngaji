@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jop.ngaji.data.Resource
 import com.jop.ngaji.data.local.store.DataStoreSetting
+import com.jop.ngaji.data.model.LastReadSurah
 import com.jop.ngaji.data.repo.SurahRepository
 import com.jop.ngaji.presentation.detailSurah.view.DetailSurahScreenEvent
 import com.jop.ngaji.presentation.detailSurah.view.DetailSurahScreenState
@@ -29,6 +30,12 @@ class DetailSurahViewModel(private val repository: SurahRepository, private val 
             }
         }
 
+        viewModelScope.launch {
+            dataStore.getLastReadSurah().collect {
+                _state.value = _state.value.copy(lastReadSurah = it ?: LastReadSurah())
+            }
+        }
+
         exoPlayerHelper.pause()
         getSurah()
     }
@@ -36,7 +43,7 @@ class DetailSurahViewModel(private val repository: SurahRepository, private val 
     fun onEvent(event: DetailSurahScreenEvent){
         when(event){
             is DetailSurahScreenEvent.GetDetailSurah -> { getDetailSurah(event.surahNumber) }
-            is DetailSurahScreenEvent.OnFavoriteSurah -> {
+            is DetailSurahScreenEvent.SetFavoriteSurah -> {
                 viewModelScope.launch {
                     repository.updateFavoriteSurah(event.surahNumber, event.isFavorite)
 
@@ -48,7 +55,16 @@ class DetailSurahViewModel(private val repository: SurahRepository, private val 
                     )
                 }
             }
-            is DetailSurahScreenEvent.OnPlayAudio -> {  exoPlayerHelper.play() }
+            is DetailSurahScreenEvent.ShowDetailAyahBottomSheet -> {
+                _state.value = _state.value.copy(selectedAyah = event.selectedAyah)
+            }
+            is DetailSurahScreenEvent.SetLastReadSurah -> {
+                viewModelScope.launch {
+                    dataStore.setLastReadSurah(event.selectedAyah)
+                }
+            }
+            is DetailSurahScreenEvent.OnPlayAudioStartFromAyah -> { exoPlayerHelper.playStartFrom(event.ayahIndex) }
+            is DetailSurahScreenEvent.OnPlayAudio -> { exoPlayerHelper.play() }
             is DetailSurahScreenEvent.OnPauseAudio -> { exoPlayerHelper.pause() }
         }
     }
