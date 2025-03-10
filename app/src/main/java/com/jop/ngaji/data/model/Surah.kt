@@ -1,5 +1,6 @@
 package com.jop.ngaji.data.model
 
+import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -8,6 +9,7 @@ import kotlinx.serialization.SerialName
 
 @Entity(tableName = "surah")
 @Serializable
+@Immutable
 data class Surah(
     @PrimaryKey(autoGenerate = false)
     @SerialName("nomor")
@@ -29,29 +31,28 @@ data class Surah(
     val arti: String = "",
     @SerialName("favorite")
     @ColumnInfo("favorite")
-    var favorite: Boolean = false,
+    val favorite: Boolean = false,
     @ColumnInfo("ayat")
     @SerialName("ayat")
     val ayat: List<Ayah> = listOf()
-)
-
-@Serializable
-data class AudioFull(
-    @SerialName("04")
-    val x04: String = "",
-)
-
-@Serializable
-data class Ayah(
-    @SerialName("nomorAyat")
-    val nomorAyat: Int = 0,
-    @SerialName("teksArab")
-    val teksArab: String = "",
-    @SerialName("teksLatin")
-    val teksLatin: String = "",
-    @SerialName("teksIndonesia")
-    val teksIndonesia: String = "",
-    @SerialName("audio")
-    val audio: AudioFull = AudioFull()
-)
-
+){
+    @Serializable
+    data class Ayah(
+        @SerialName("nomorAyat")
+        val nomorAyat: Int = 0,
+        @SerialName("teksArab")
+        val teksArab: String = "",
+        @SerialName("teksLatin")
+        val teksLatin: String = "",
+        @SerialName("teksIndonesia")
+        val teksIndonesia: String = "",
+        @SerialName("audio")
+        val audio: AudioFull = AudioFull()
+    ){
+        @Serializable
+        data class AudioFull(
+            @SerialName("04")
+            val x04: String = "",
+        )
+    }
+}
