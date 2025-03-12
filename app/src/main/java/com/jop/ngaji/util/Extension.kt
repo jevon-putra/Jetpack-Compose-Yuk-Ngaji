@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import java.util.Date
 import java.util.Locale
 
 fun Modifier.shimmerBackground(isLoading: Boolean = true): Modifier = composed {
@@ -84,3 +85,13 @@ fun String.getCountryCodeFromCountryName(): String {
 }
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settingPrefs")
+
+fun Long.differenceResult(): Pair<Long, Long> {
+    val differentTime = this - Date().time
+    val value: Long = differentTime / 1000
+
+    val hours: Long = value % (24 * 3600) / 3600
+    val minute: Long = value % 3600 / 60
+
+    return Pair(hours, minute)
+}

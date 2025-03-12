@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LastSyncLocation(
-    val city: String = "",
-    val country: String = "",
+    val city: String = "Surabaya",
+    val country: String = "Indonesia",
     val lastSync: Long = 0
 )

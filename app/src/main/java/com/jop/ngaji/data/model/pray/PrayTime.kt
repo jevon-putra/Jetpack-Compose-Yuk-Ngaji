@@ -1,4 +1,4 @@
-package com.jop.ngaji.data.model
+package com.jop.ngaji.data.model.pray
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
