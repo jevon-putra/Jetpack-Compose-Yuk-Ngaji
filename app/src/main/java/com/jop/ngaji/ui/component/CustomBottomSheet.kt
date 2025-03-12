@@ -23,7 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jop.ngaji.R
 import com.jop.ngaji.data.model.LastReadSurah
+import com.jop.ngaji.data.model.Prayer
 import com.jop.ngaji.presentation.detailSurah.view.DetailSurahScreenEvent
+import com.jop.ngaji.presentation.prayer.view.PrayerScreenEvent
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,5 +95,65 @@ fun ItemActionDetailAyah(icon: Int, text: String, action: () -> Unit){
             text = text,
             style = MaterialTheme.typography.bodyMedium
         )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun DetailPrayerBottomSheet(
+    state: SheetState,
+    showBottomSheet: MutableState<Boolean>,
+    prayer: Prayer,
+    event: (PrayerScreenEvent) -> Unit
+){
+    ModalBottomSheet(
+        sheetState = state,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        onDismissRequest = {
+            showBottomSheet.value = false
+            event(PrayerScreenEvent.ShowDetailPrayer(null))
+        }
+    ) {
+        Column{
+            Text(
+                modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth(),
+                text = prayer.judul,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                textAlign = TextAlign.Center
+            )
+
+            HorizontalDivider()
+
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = prayer.arab,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.End
+                    )
+                )
+
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = prayer.latin,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                )
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = prayer.terjemah,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                )
+            }
+        }
     }
 }

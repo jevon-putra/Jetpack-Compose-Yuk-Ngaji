@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.jop.ngaji.data.model.LastReadSurah
 import com.jop.ngaji.data.model.LastSyncLocation
-import com.jop.ngaji.data.model.PrayTime
+import com.jop.ngaji.data.model.pray.PrayTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

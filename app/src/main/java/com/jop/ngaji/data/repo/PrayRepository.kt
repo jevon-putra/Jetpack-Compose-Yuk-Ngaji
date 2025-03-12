@@ -1,7 +1,7 @@
 package com.jop.ngaji.data.repo
 
 import com.jop.ngaji.data.Resource
-import com.jop.ngaji.data.model.PrayTime
+import com.jop.ngaji.data.model.pray.PrayTime
 import com.jop.ngaji.network.api.PrayAPI
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

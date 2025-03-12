@@ -1,8 +1,7 @@
 package com.jop.ngaji.network.api
 
 import com.jop.ngaji.data.BaseResponse
-import com.jop.ngaji.data.model.PrayTime
-import com.jop.ngaji.data.model.Surah
+import com.jop.ngaji.data.model.pray.PrayTime
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
