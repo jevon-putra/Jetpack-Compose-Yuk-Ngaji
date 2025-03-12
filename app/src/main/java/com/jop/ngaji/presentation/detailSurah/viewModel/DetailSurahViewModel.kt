@@ -96,12 +96,19 @@ class DetailSurahViewModel(private val repository: SurahRepository, private val 
                         _state.value = _state.value.copy(isDetailSurahLoading = true)
                     }
                     is Resource.Success -> {
+                        var updateSurah = _state.value.allSurah.find { it.id == surahNumber }
+                        updateSurah = updateSurah!!.copy(ayat = it.data!!.ayat)
+
+                        val listSurah = _state.value.allSurah.toMutableList()
+                        listSurah[surahNumber - 1] = updateSurah
+
                         _state.value = _state.value.copy(
+                            allSurah = listSurah,
                             selectedSurah = it.data,
                             isDetailSurahLoading = false
                         )
 
-                        exoPlayerHelper.addSurah(it.data!!)
+                        exoPlayerHelper.addSurah(it.data)
                     }
                     is Resource.Error -> {
                         _state.value = _state.value.copy(errorMessage = "Terjadi Kesalahan", isDetailSurahLoading = false)

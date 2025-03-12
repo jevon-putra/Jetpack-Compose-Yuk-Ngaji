@@ -1,5 +1,6 @@
-package com.jop.ngaji.room.dao
+package com.jop.ngaji.data.local.room.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -11,6 +12,9 @@ import com.jop.ngaji.data.model.Surah
 interface SurahDao {
     @Query("SELECT * FROM `surah`")
     suspend fun getAllSurah(): List<Surah>
+
+    @Query("SELECT * FROM `surah` WHERE `favorite` = 1")
+    fun getAllSurahFavorite(): LiveData<List<Surah>>
 
     @Query("SELECT * FROM `surah` WHERE `id` = :surahNumber LIMIT 1")
     suspend fun detailSurah(surahNumber: Int): List<Surah>
