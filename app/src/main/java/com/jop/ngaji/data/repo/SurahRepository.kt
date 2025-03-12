@@ -3,7 +3,7 @@ package com.jop.ngaji.data.repo
 import com.jop.ngaji.data.Resource
 import com.jop.ngaji.data.model.Surah
 import com.jop.ngaji.network.api.SurahAPI
-import com.jop.ngaji.room.dao.SurahDao
+import com.jop.ngaji.data.local.room.dao.SurahDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -24,6 +24,8 @@ class SurahRepository(private val surahDao: SurahDao, private val surahAPI: Sura
             emit(Resource.Error(message = e.message.toString()))
         }
     }
+
+    fun getAllSurahFavorite() = surahDao.getAllSurahFavorite()
 
     fun detailSurah(surahNumber: Int) : Flow<Resource<Surah?>> = flow {
         try {

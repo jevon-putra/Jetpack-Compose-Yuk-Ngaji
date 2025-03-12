@@ -177,7 +177,7 @@ fun DetailSurahScreen(
                     state = pagerState,
                     reverseLayout = true,
                 ) {
-                    if(state.isDetailSurahLoading){
+                    if(state.isDetailSurahLoading && state.selectedSurah == null){
                         LoadingStateDetailSurah(modifier = Modifier.weight(1f))
                     } else {
                         AyahOfSurah(
@@ -226,7 +226,7 @@ fun DetailSurahScreen(
                                         onEvent(DetailSurahScreenEvent.OnPlayAudio)
                                     }
                                 },
-                            painter = painterResource(if(state.isAudioPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                            painter = painterResource(if(state.isAudioPlaying) R.drawable.ic_pause else R.drawable.ic_play_fill),
                             contentDescription = "Play Murottal",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -262,7 +262,7 @@ fun AyahOfSurah(
     LaunchedEffect(state.selectedSurah!!.id) {
         if (lastReadAyah != null && surahNumber == state.selectedSurah.id) {
             scope.launch {
-                columnListState.animateScrollToItem(lastReadAyah)
+                columnListState.animateScrollToItem(lastReadAyah - 1)
             }
         }
     }
