@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import com.jop.ngaji.data.local.store.DataStoreSetting
 import com.jop.ngaji.presentation.detailSurah.viewModel.DetailSurahViewModel
 import com.jop.ngaji.presentation.home.viewModel.HomeViewModel
+import com.jop.ngaji.presentation.prayer.viewModel.PrayerViewModel
 import com.jop.ngaji.presentation.surah.viewModel.SurahViewModel
+import com.jop.ngaji.presentation.surahFavorite.viewModel.SurahFavoriteViewModel
 import com.jop.ngaji.util.dataStore
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -16,6 +18,10 @@ val viewModelsModule = module {
     single<DataStoreSetting> { DataStoreSetting(get()) }
 
     viewModel<SurahViewModel>{ SurahViewModel(get()) }
+    viewModel<SurahFavoriteViewModel>{ SurahFavoriteViewModel(get()) }
+
     viewModel<HomeViewModel>{ HomeViewModel(get(), get(), get()) }
     viewModel<DetailSurahViewModel>{ DetailSurahViewModel(get(), get(), get()) }
+
+    viewModel<PrayerViewModel>{ PrayerViewModel(get()) }
 }
