@@ -1,25 +1,25 @@
-package com.jop.ngaji.presentation.surah.view
+package com.jop.ngaji.presentation.prayer.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -30,34 +30,42 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.jop.ngaji.R
 import com.jop.ngaji.ui.component.CustomToolbar
-import com.jop.ngaji.ui.route.Route
+import com.jop.ngaji.ui.component.DetailPrayerBottomSheet
 import com.jop.ngaji.util.shimmerBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SurahScreen(navHostController: NavHostController, state: SurahScreenState) {
+fun PrayerScreen(navHostController: NavHostController, state: PrayerScreenState, onEvent: (PrayerScreenEvent) -> Unit) {
+    val showBottomSheet = remember { mutableStateOf(false) }
+    val stateBottomSheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    if(showBottomSheet.value){
+        DetailPrayerBottomSheet(
+            state = stateBottomSheet,
+            showBottomSheet = showBottomSheet,
+            prayer = state.selectedPrayer!!,
+            event = onEvent
+        )
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
-            ElevatedCard(
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 8.dp
-                )
-            ) {
-                CustomToolbar(
-                    title = "Quran"
-                )
-            }
+            CustomToolbar(
+                title = "Doa",
+                canNavigateBack = true,
+                navigateUp = { navHostController.popBackStack() }
+            )
         }
     ){ padding ->
         LazyColumn(
             modifier = Modifier
-                .padding(top = padding.calculateTopPadding())
+                .padding(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding())
                 .fillMaxSize(),
         ) {
             if(state.isLoading){
                 items(count = 20) {
-                    ItemSurah(isLoading = true)
+                    ItemPrayer(isLoading = true)
 
                     HorizontalDivider(
                         thickness = 1.dp,
@@ -65,18 +73,16 @@ fun SurahScreen(navHostController: NavHostController, state: SurahScreenState) {
                     )
                 }
             } else {
-                items(
+                itemsIndexed(
                     items = state.data,
-                    key = { surah -> surah.id }
-                ) { surah ->
-                    ItemSurah(
-                        surahNumber = surah.id.toString(),
-                        surahName = surah.namaLatin,
-                        surahNameArabic = surah.nama,
-                        surahInfo = surah.arti,
-                        totalAyah = surah.jumlahAyat,
+                    key = { _, prayer -> prayer.id }
+                ) { index, prayer ->
+                    ItemPrayer(
+                        number = (index + 1).toString(),
+                        prayerName = prayer.judul,
                         onAction = {
-                            navHostController.navigate(Route.QURAN.plus("?number=${surah.id}"))
+                            showBottomSheet.value = true
+                            onEvent(PrayerScreenEvent.ShowDetailPrayer(prayer))
                         }
                     )
 
@@ -90,15 +96,10 @@ fun SurahScreen(navHostController: NavHostController, state: SurahScreenState) {
     }
 }
 
-
-
 @Composable
-fun ItemSurah(
-    surahNumber: String = "1",
-    surahName: String = "Al-Fatihah",
-    surahNameArabic: String = "الفاتحة",
-    totalAyah: Int = 1,
-    surahInfo: String = "Pembuka",
+fun ItemPrayer(
+    number: String = "1",
+    prayerName: String = "Doa Bangun Tidur",
     isLoading: Boolean = false,
     onAction: () -> Unit = {}
 ){
@@ -121,8 +122,8 @@ fun ItemSurah(
                 contentDescription = "Number",
             )
             Text(
-                modifier = Modifier.fillMaxWidth().align(Alignment.Center),
-                text = surahNumber,
+                modifier = Modifier.run { fillMaxWidth().align(Alignment.Center) },
+                text = number,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -131,32 +132,11 @@ fun ItemSurah(
             )
         }
 
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = surahName,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-            )
-
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "$surahInfo | $totalAyah Ayat",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-            )
-        }
-
         Text(
-            text = surahNameArabic,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.weight(1f),
+            text = prayerName,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             ),
         )

@@ -64,4 +64,28 @@ class NetworkClient {
             })
         }
     }
+
+    fun prayerClient() = HttpClient(OkHttp) {
+        defaultRequest {
+            url {
+                takeFrom(ConstantNetworkValue.BASE_URL_PRAYER)
+            }
+            contentType(ContentType.Application.Json)
+        }
+        install(Logging) {
+            logger = Logger.ANDROID
+            level = LogLevel.BODY
+        }
+        install(HttpTimeout) {
+            val timeout = 30000L
+            connectTimeoutMillis = timeout
+            requestTimeoutMillis = timeout
+        }
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                ignoreUnknownKeys = true
+            })
+        }
+    }
 }
